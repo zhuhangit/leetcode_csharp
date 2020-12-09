@@ -18,7 +18,7 @@ namespace leetcode
     {
 
         /// <summary>
-        /// 1. 两数之和
+        /// 1. 两数之和 
         /// </summary>
         /// <param name="nums"></param>
         /// <param name="target"></param>
