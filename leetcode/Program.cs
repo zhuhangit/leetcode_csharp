@@ -12,17 +12,17 @@ namespace leetcode
     {
         static void Main(string[] args)
         {
-            // var test = leetcode.TwoSum(new int[] { 1, 2, 3, 3, 5 }, 8);
-
-            var l1 = new ListNode { val = 2, next = new ListNode { val = 4, next = new ListNode { val = 3, next = null } } };
-            var l2 = new ListNode { val = 5, next = new ListNode { val = 6, next = new ListNode { val = 4, next = null } } };
-            var test = leetcode.AddTwoNumbers(l1, l2);
+            var test = leetcode.LongestPalindrome("abcda");
 
             Console.WriteLine(JsonConvert.SerializeObject(test));
             Console.Read();
         }
     }
 
+    /// <summary>
+    /// leetcode刷题
+    /// 存在很大优化空间：记录排名难看的题目；后续会考虑优化，不过大多还没思路；
+    /// </summary>
     public static class leetcode
     {
 
@@ -59,7 +59,6 @@ namespace leetcode
             }
             return first < 0 ? null : new int[] { first, next };
         }
-
 
         /// <summary>
         /// 2. 两数相加
@@ -136,7 +135,221 @@ namespace leetcode
             }
             return relt;
         }
+
+        /// <summary>
+        /// 3. 无重复字符的最长子串
+        /// 注意：验证失败剔除索引及以前字符即可；循环需要验证最后一次结果
+        /// 存在很大优化空间：内存消耗：26.6 MB, 在所有 C# 提交中击败了5.07%的用户
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static int LengthOfLongestSubstring(string s)
+        {
+            int relt = 0;
+            StringBuilder sb = new StringBuilder();
+
+            if (s != null)
+                for (int i = 0; i < s.Length; i++)
+                {
+                    string str = s[i].ToString();
+                    if (i == 0)
+                    {
+                        relt = 1;
+                        sb.Append(str);
+                        continue;
+                    }
+                    int index = sb.ToString().IndexOf(str);
+                    if (index > -1)
+                    {
+                        relt = sb.Length > relt ? sb.Length : relt;
+                        var sbNew = sb.ToString().Substring(index + 1);
+                        sb.Clear();
+                        sb.Append(sbNew);
+                    }
+                    sb.Append(str);
+                }
+            //最后一次验证
+            relt = sb.Length > relt ? sb.Length : relt;
+            return relt;
+        }
+
+        /// <summary>
+        /// 4. 寻找两个正序数组的中位数
+        /// 存在很大优化空间：执行用时： 800 ms , 在所有 C# 提交中击败了 5.72% 的用户
+        /// 思考：没有好的思路，只能合并排序
+        /// </summary>
+        /// <param name="nums1"></param>
+        /// <param name="nums2"></param>
+        /// <returns></returns>
+        public static double FindMedianSortedArrays(int[] nums1, int[] nums2)
+        {
+            double relt = 0;
+            var nums3 = new int[] { };
+            nums1 = nums1 ?? new int[] { };
+            nums2 = nums2 ?? new int[] { };
+
+            if (nums1.Length == 0 || nums2.Length == 0)
+            {
+                nums3 = nums1.Length == 0 ? nums2 : nums1;
+            }
+            else
+            {
+                var lt = new List<int>();//number
+                foreach (var item in nums1)
+                    lt.Add(item);
+                foreach (var item in nums2)
+                    lt.Add(item);
+                nums3 = lt.ToArray();
+            }
+            var sz3 = GetMiddleNumber(nums3);
+            if (sz3.Length == 1)
+                relt = sz3[0] / 1.0;
+            else if (sz3.Length >= 2)
+                relt = (sz3[0] + sz3[1]) / 2.0;
+            return relt;
+        }
+        /// <summary>
+        /// 获取数组中位数
+        /// </summary>
+        private static int[] GetMiddleNumber(int[] nums1)
+        {
+            int root = 0;
+            var dic = new Dictionary<int, bool>();//index,delete
+            if (nums1.Length > 2)
+                while (root < (int)(nums1.Length / 2.0 + 0.5) - 1)
+                {
+                    int max = 0, min = 0;
+                    int maxIndex = -1, minIndex = -1;
+                    for (int i = 0; i < nums1.Length; i++)
+                    {
+                        if (root == 0)
+                            dic.Add(i, false);  //初始化
+                        else if (dic[i])
+                            continue;           //跳过已删除数据
+
+                        int number = nums1[i];
+                        if (maxIndex == -1)
+                        {
+                            max = number;
+                            min = number;
+                            maxIndex = i;
+                            minIndex = i;
+                            continue;
+                        }
+                        if (number > max)
+                        {
+                            max = number;
+                            maxIndex = i;
+                        }
+                        else if (number < min)
+                        {
+                            min = number;
+                            minIndex = i;
+                        }
+                    }
+                    //记录历史最大、最小
+                    if (maxIndex != -1)
+                        dic[maxIndex] = true;
+                    if (minIndex != -1)
+                        dic[minIndex] = true;
+                    //初始化变量
+                    max = 0;
+                    min = 0;
+                    maxIndex = -1;
+                    minIndex = -1;
+                    root++;
+                }
+            else
+                return nums1;
+            var lt = new List<int>();//number
+            foreach (var item in dic)
+            {
+                int index = item.Key;
+                if (!item.Value)
+                    lt.Add(nums1[index]);
+            }
+            var relt = lt.ToArray();
+            return relt;
+        }
+
+        /// <summary>
+        /// 5. 最长回文子串
+        /// 思路：无非两种，单数回文，双数回文
+        /// 注意：循环中的临界值,采用索引时注意范围限定
+        /// 教训：这道题踩坑太多，全是边界问题，提交10次通过。。。
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string LongestPalindrome(string s)
+        {
+            string relt = string.Empty;
+            s = s ?? "";
+
+            if (s.Length <= 2)
+            {
+                if (s.Length == 0)
+                    relt = "";
+                else if (s.Length == 2 && s[0] != s[1])
+                    relt = s[0].ToString();
+                else
+                    relt = s;
+                return relt;
+            }
+
+            var DoubleHW = new List<int>();//是否存在双数回文
+            //单数回文
+            for (int i = 1; i < s.Length - 1; i++)
+            {
+                char before = s[i - 1];
+                char next = s[i + 1];
+                char current = s[i];
+
+                if (before == current)
+                    DoubleHW.Add(i - 1);
+                //添加最后一次回文
+                if (i == s.Length - 2 && next == current)
+                    DoubleHW.Add(i);
+                if (before != next)
+                    continue;
+                int isPassLength = 3;
+                for (int j = 1; j < i && i + 1 + j < s.Length; j++)
+                {
+                    char beforeJ = s[i - 1 - j];
+                    char nextJ = s[i + 1 + j];
+                    if (beforeJ != nextJ)
+                        break;
+                    isPassLength += 2;
+                }
+                if (isPassLength > relt.Length)
+                    relt = s.Substring(i - (isPassLength - 1) / 2, isPassLength);
+            }
+            //双数回文
+            if (DoubleHW.Count > 0)
+                foreach (var i in DoubleHW)
+                {
+                    int isPassLength = 2;
+                    for (int j = 1; j < i + 1 && i + 1 + j < s.Length; j++)
+                    {
+                        char beforeJ = s[i - j];
+                        char nextJ = s[i + 1 + j];
+                        if (beforeJ != nextJ)
+                            break;
+                        isPassLength += 2;
+                    }
+                    if (isPassLength > relt.Length)
+                        relt = s.Substring(i + 1 - isPassLength / 2, isPassLength);
+                }
+            //未找到回文字符，默认取第一个
+            if (relt.Length == 0)
+                relt = s[0].ToString();
+            return relt;
+        }
+
+
     }
+
+
+
 
     // Definition for singly-linked list.
     public class ListNode
