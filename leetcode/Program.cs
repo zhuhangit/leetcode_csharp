@@ -12,7 +12,7 @@ namespace leetcode
     {
         static void Main(string[] args)
         {
-            var test = leetcode.LongestPalindrome("abcda");
+            var test = leetcode.Convert6("LEETCODEISHIRING", 2);
 
             Console.WriteLine(JsonConvert.SerializeObject(test));
             Console.Read();
@@ -345,6 +345,64 @@ namespace leetcode
             return relt;
         }
 
+        /// <summary>
+        /// 6. Z 字形变换
+        /// 存在很大优化空间：执行用时：560 ms, 在所有 C# 提交中击败了5.22%的用户
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="numRows"></param>
+        /// <returns></returns>
+        public static string Convert6(string s, int numRows)
+        {
+            string relt = s ?? "";
+            if (relt.Length <= numRows || numRows < 2)
+                return relt;//不需要转换
+
+            int fullLength = numRows * 2 - 2;   //单次长度
+            int fullNum = relt.Length / fullLength;     //完整次数
+            int remainder = relt.Length % fullLength;   //余数
+            int colsLength = fullNum * (numRows - 1);   //单行最长
+            if (remainder != 0)
+                colsLength += (remainder <= numRows ? 1 : remainder - numRows + 1);
+
+            //初始化
+            var list = new List<char[]>();
+            for (int i = 0; i < numRows; i++)
+                list.Add(new char[colsLength]);
+            //填充
+            var colIndex = 0;
+            for (int i = 1; i <= relt.Length; i++)
+            {
+                var cr = relt[i - 1];
+                int fullNumN = i / fullLength;     //完整次数
+                int remainderN = i % fullLength;   //余数
+                //竖线，奇偶次顺序不同
+                if (remainderN > 0 && remainderN <= numRows)
+                {
+                    list[remainderN - 1][colIndex] = cr;
+                    if (remainderN == numRows)
+                        colIndex++;  //next
+                }
+                //折线
+                else
+                {
+                    remainderN = remainderN == 0 ? fullLength : remainderN;
+                    list[(numRows - 1) - (remainderN - numRows)][colIndex] = cr;
+                    colIndex++;  //next
+                }
+            }
+            //读取
+            var sb = new StringBuilder();
+            for (int j = 0; j < numRows; j++)
+                for (int i = 0; i < colsLength; i++)
+                {
+                    var str = list[j][i].ToString();
+                    if (str!= "\0")
+                        sb.Append(str);
+                }
+            relt = sb.ToString();
+            return relt;
+        }
 
     }
 
